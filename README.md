@@ -1,12 +1,13 @@
 # Emacs-Persistent-Overlays
-This is an Emacs mode that allows you to store overlays between sessions. This is useful for storing overlays with the invisible property in sideshow and outline modes.
+This is an Emacs mode that allows you to store overlays between sessions. This is useful for storing overlays with the invisible property in hideshow and outline modes.
 
 ## About
 
 The goal for persistent-overlays is to maintain persistent overlays
 between emacs sessions. It has been tested with hideshow and
-outline on Linux, Mac OS X and Windows. However, this version
-should be considered beta software.
+outline modes on Linux, Mac OS X and Windows. However, this version
+should be considered beta software and it has not been previously
+released.
 
 Overlays are stored in ~/.emacs-pov by default. There are several
 customizable variables which allow a user to change the file naming
