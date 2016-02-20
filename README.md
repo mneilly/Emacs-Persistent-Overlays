@@ -38,14 +38,14 @@ a different directory in which to store overlays. If
 the underscore delimited full path of the file instead of using a
 SHA1 hash. Overlay file names always end with .pov.
 
-**pov-property-name** specifies a property symbol that must exist
-in an overlay for it to be handled by this mode. By default it is
-set to the symbol **'invisible** so that overlays which hide sections
-of a buffer are stored. This was the primary motivation for this
-mode.
+**pov-property-names** specifies a list of property symbols that
+must exist in an overlay for it to be handled by this mode. By
+default it is set to a list containing the symbol **invisible** so
+that overlays which hide sections of a buffer are stored. This
+was the primary motivation for this mode.
 
-If **pov-auto-save** is t all overlays containing
-**pov-property-name** will be saved in the directory indicated by
+If **pov-auto-save** is t all overlays containing properties in
+**pov-property-names** will be saved in the directory indicated by
 **pov-directory** when the buffer is saved.
 
 If **pov-auto-load** is t existing overlays for the buffer will be
