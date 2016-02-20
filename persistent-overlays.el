@@ -356,7 +356,7 @@ a different directory in which to store overlays. If
 the underscore delimited full path of the file instead of using a
 SHA1 hash. Overlay file names always end with .pov.
 
-`pov-property-name' specifics a property symbol that must exist
+`pov-property-name' specifies a property symbol that must exist
 in an overlay for it to be handled by this mode. By default it is
 set to the symbol 'invisible so that overlays which hide sections
 of a buffer are stored. This was the primary motivation for this
