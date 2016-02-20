@@ -216,7 +216,7 @@ merging overlays."
   "Internal function that generates the file name for overlay files."
   ; strip unique identifier off of fname
   (setq fname (replace-regexp-in-string "<.*?>$" "" fname))
-  (let ((name (if pov-use-path-name (replace-regexp-in-string "[:/\\]" "_" full) (concat fname "-" (secure-hash 'sha1 full) ".pov")))
+  (let ((name (if pov-use-path-name (replace-regexp-in-string "[:/\\]" "_" full) (concat fname "-" (sha1 full) ".pov")))
 	(dir (if pov-store-with-user-file (replace-regexp-in-string "[:/\\][^/\\]*$" "" full) pov-directory)))
     (when pov-store-as-hidden (setq name (concat "." name)))
     (concat dir "/" name)))
