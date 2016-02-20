@@ -50,15 +50,15 @@
 
 ;; ===== Customization variables ==============================================
 
-(defcustom pov-property-name 'invisible
-  "Indicates the name of the property that must exist in an
-overlay for it to be handled by this mode.\n\nBy default it is set
-to `invisible'."
-  :type 'symbol
+(defcustom pov-property-names '(invisible)
+  "Indicates a list of overlay property names. If any of these
+properties exist in an overlay it will be handled by this
+mode.\n\nBy default it is set to `invisible'."
+  :type '(repeat symbol)
   :group 'persistent-overlays)
 ;; make it buffer local because different buffers may be using different
 ;; modes and minor modes
-(make-variable-buffer-local 'pov-property-name)
+(make-variable-buffer-local 'pov-property-names)
 
 (defcustom pov-disable-on-major-mode-change nil
   "When t switching major modes will disable pov-minor-mode. By
@@ -184,11 +184,14 @@ into a temporary buffer for use when saving or merging overlays."
       (princ (concat ";; " (buffer-file-name) "\n;; " (current-time-string) "\n") tbuf)
       (let ((ovlys (overlays-in (point-min) (point-max))))
 	(while ovlys
-	  (let ((ovly (car ovlys)))
-	    (when (overlay-get ovly pov-property-name)
-	      (setq oprops (overlay-properties ovly))
-	      (princ (format "(let ((tovly (make-overlay %d %d)) (tplist '%s)) (while tplist (let ((tp (car tplist)) (tpv (cadr tplist))) (overlay-put tovly tp tpv)) (setq tplist (cddr tplist))))\n" (overlay-start ovly) (overlay-end ovly) oprops) tbuf)
-	      ))
+	  (let ((ovly (car ovlys)) (props pov-property-names))
+	    (while props
+	      (let ((prop (car props)))
+		(when (overlay-get ovly prop)
+		  (setq oprops (overlay-properties ovly))
+		  (princ (format "(let ((tovly (make-overlay %d %d)) (tplist '%s)) (while tplist (let ((tp (car tplist)) (tpv (cadr tplist))) (overlay-put tovly tp tpv)) (setq tplist (cddr tplist))))\n" (overlay-start ovly) (overlay-end ovly) oprops) tbuf)
+		  ))
+	      (setq props (cdr props))))
 	  (setq ovlys (cdr ovlys)))
 	(set-buffer tbuf)
 	(goto-char (point-min))
@@ -211,6 +214,8 @@ merging overlays."
 
 (defun pov-get-ovly-fname (full fname)
   "Internal function that generates the file name for overlay files."
+  ; strip unique identifier off of fname
+  (setq fname (replace-regexp-in-string "<.*?>$" "" fname))
   (let ((name (if pov-use-path-name (replace-regexp-in-string "[:/\\]" "_" full) (concat fname "-" (secure-hash 'sha1 full) ".pov")))
 	(dir (if pov-store-with-user-file (replace-regexp-in-string "[:/\\][^/\\]*$" "" full) pov-directory)))
     (when pov-store-as-hidden (setq name (concat "." name)))
@@ -259,7 +264,12 @@ values as an existing overlay only a single overlay is retained.
 		(set-buffer tbuf)
 		(when (fboundp 'delete-duplicate-lines) (delete-duplicate-lines (point-min) (point-max)) (pov-delete-duplicate-lines tbuf))
 		(set-buffer curbuf)
-		(pov-remove-overlays (point-min) (point-max) pov-property-name 'ANY)
+		(let ((props pov-property-names))
+		  (while props
+		    (let ((prop (car props)))
+		      (pov-remove-overlays (point-min) (point-max) prop 'ANY))
+		    (setq props (cdr props))
+		    ))
 		(eval-buffer tbuf)
 		(kill-buffer tbuf)
 		(kill-buffer xbuf)
@@ -274,10 +284,11 @@ values as an existing overlay only a single overlay is retained.
   "OVFILE must be explicity provided. The overlay file OVFILE
 specifies the path to the overlay file to be loaded.
 
-NOTE: All overlays that contain property `pov-property-name' are
-removed before loading overlays. Loaded overlays are not merged
-with existing overlays. See `pov-merge-overlays' and
-`pov-mergex-overlays' if you want to merge overlays.
+NOTE: All overlays that contain properties in
+`pov-property-names' are removed before loading overlays. Loaded
+overlays are not merged with existing overlays. See
+`pov-merge-overlays' and `pov-mergex-overlays' if you want to
+merge overlays.
 "
   (interactive "f")
   (when (pov-load-overlays ovfile)
@@ -288,10 +299,10 @@ with existing overlays. See `pov-merge-overlays' and
 the current buffer is loaded from `pov-directory'. If OVFILE is
 provided it specifies the path to the overlay file to be loaded.
 
-NOTE: All overlays that contain property `pov-property-name' are
-removed before loading overlays. Loaded overlays are not merged
-with existing overlays. A future version may provide an
-`pov-merge-overlays' function.
+NOTE: All overlays that contain properties in
+`pov-property-names' are removed before loading overlays. Loaded
+overlays are not merged with existing overlays. A future version
+may provide an `pov-merge-overlays' function.
 "
   (interactive)
   (when (buffer-file-name)
@@ -301,7 +312,12 @@ with existing overlays. A future version may provide an
 	(setq tbuf (pov-read-overlays file))
 	(if tbuf
 	    (progn
-	      (pov-remove-overlays (point-min) (point-max) pov-property-name 'ANY)
+	      (let ((props pov-property-names))
+		(while props
+		  (let ((prop (car props)))
+		    (pov-remove-overlays (point-min) (point-max) prop 'ANY))
+		  (setq props (cdr props))
+		  ))
 	      (eval-buffer tbuf)
 	      (kill-buffer tbuf)
 	      (setq loaded t))
@@ -315,8 +331,9 @@ with existing overlays. A future version may provide an
 corresponding to the current buffer is saved in OVFILE. Usually,
 `pov-save-overlays' should be used instead.
 
-NOTE: Only overlays that contain property `pov-property-name' are
-saved. If the overlay already exists it is overwritten.
+NOTE: Only overlays that contain properties in
+`pov-property-names' are saved. If the overlay already exists it
+is overwritten.
 "
   (interactive "F")
   (when (pov-save-overlays ovfile)
@@ -328,7 +345,7 @@ the current buffer is saved in the directory pointed to by
 `pov-directory'. If OVFILE is provided, it specifies the path of
 the overlay file to be saved.
 
-NOTE: Only overlays that contain property `pov-property-name' are
+NOTE: Only overlays that contain properties in `pov-property-names' are
 saved. If the overlay already exists it is overwritten.
 "
   (interactive)
@@ -356,14 +373,14 @@ a different directory in which to store overlays. If
 the underscore delimited full path of the file instead of using a
 SHA1 hash. Overlay file names always end with .pov.
 
-`pov-property-name' specifies a property symbol that must exist
-in an overlay for it to be handled by this mode. By default it is
-set to the symbol 'invisible so that overlays which hide sections
-of a buffer are stored. This was the primary motivation for this
-mode.
+`pov-property-names' specifies a list of property symbols that
+must exist in an overlay for it to be handled by this mode. By
+default it is set to a list containing the symbol 'invisible so
+that overlays which hide sections of a buffer are stored. This
+was the primary motivation for this mode.
 
-If `pov-auto-save' is t all overlays containing
-`pov-property-name' will be saved in the directory indicated by
+If `pov-auto-save' is t all overlays containing properties in
+`pov-property-names' will be saved in the directory indicated by
 `pov-directory' when the buffer is saved.
 
 If `pov-auto-load' is t existing overlays for the buffer will be
