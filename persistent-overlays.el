@@ -359,7 +359,7 @@ saved. If the overlay already exists it is overwritten.
 	      (goto-char (point-min))
 	      (insert (concat ";; " (buffer-file-name) "\n;; " (current-time-string) "\n"))
 	      (write-region (point-min) (point-max) file nil 'quietly))
-	  (delete-file file))
+	  (when (file-exists-p file) (delete-file file)))
 	(kill-buffer tbuf))
       (setq saved t))
     saved))
