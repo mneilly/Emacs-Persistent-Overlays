@@ -181,7 +181,6 @@ designated by setting VALUE to symbol 'ANY."
 into a temporary buffer for use when saving or merging overlays."
   (let ((tbuf (generate-new-buffer "**persistent-overlays**")))
     (save-excursion
-      (princ (concat ";; " (buffer-file-name) "\n;; " (current-time-string) "\n") tbuf)
       (let ((ovlys (overlays-in (point-min) (point-max))))
 	(while ovlys
 	  (let ((ovly (car ovlys)) (props pov-property-names))
@@ -355,7 +354,12 @@ saved. If the overlay already exists it is overwritten.
       (save-excursion
 	(setq tbuf (pov-get-existing-overlays))
 	(set-buffer tbuf)
-	(write-region (point-min) (point-max) file nil 'quietly)
+	(if (> (buffer-size) 0)
+	    (progn
+	      (goto-char (point-min))
+	      (insert (concat ";; " (buffer-file-name) "\n;; " (current-time-string) "\n"))
+	      (write-region (point-min) (point-max) file nil 'quietly))
+	  (delete-file file))
 	(kill-buffer tbuf))
       (setq saved t))
     saved))
