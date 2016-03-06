@@ -195,7 +195,7 @@ use when saving or merging overlays."
 	(while ovlys
 	  (let ((ovly (car ovlys)) (props pov-property-names))
 	    (while props
-	      (let ((prop (car props)))
+	      (let ((prop (car props)) (oprops nil))
 		(when (overlay-get ovly prop)
 		  (setq oprops (overlay-properties ovly))
 		  (princ (format "(let ((tovly (make-overlay %d %d)) (tplist '%s)) (while tplist (let ((tp (car tplist)) (tpv (cadr tplist))) (overlay-put tovly tp tpv)) (setq tplist (cddr tplist))))\n" (overlay-start ovly) (overlay-end ovly) oprops) tbuf)))
@@ -443,7 +443,7 @@ Key bindings:
 	(format-mode-line mode-name)
         (when pov-disable-on-major-mode-change (add-hook 'change-major-mode-hook (pov-disable) nil t))
 	(when pov-auto-save (add-hook 'after-save-hook 'pov-save-overlays nil t))
-	(if pov-auto-merge (pov-merge-overlays) (when (pov-auto-load (pov-load-overlays))))
+	(if pov-auto-merge (pov-merge-overlays) (when pov-auto-load (pov-load-overlays)))
 	)
     (progn ; pov-minor-mode was just disabled
       (remove-hook 'after-save-hook 'pov-save-overlays t)
