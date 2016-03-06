@@ -162,33 +162,33 @@ loading and merging."
   (let ((tbuf (generate-new-buffer "**persistent-overlays**")))
     (if (file-exists-p file)
 	(with-current-buffer tbuf
-	  ;; only execute the expected code
+	  ;; only keep elisp code that is in the expected format
 	  (insert-file-contents file)
 	  (keep-lines "(let ((tovly (make-overlay [[:digit:]]+ [[:digit:]]+)) (tplist '(.*?))) (while tplist (let ((tp (car tplist)) (tpv (cadr tplist))) (overlay-put tovly tp tpv)) (setq tplist (cddr tplist))))")
 	  )
-      (when (char-or-string-p file) (setq tbuf nil)))
+      (when (char-or-string-p file)
+	(progn
+	  (kill-buffer tbuf)
+	  (setq tbuf nil))))
     tbuf))
 
 (defun pov-remove-overlays (&optional start end name value)
   "This is an internal function which wraps `remove-overlays'.
 The START, END and NAME argments match those passed to `remove-overlays'.
-It allows VALUE to be ignored by allowing it to be any value.  This is
-designated by setting VALUE to symbol 'ANY."
+If VALUE is set to 'ANY, then all values are matched.  This allows
+removal of overlays by matching only the name."
   (if (eq value 'ANY)
-      (progn
-	(let ((ovlys (overlays-in start end)))
-	  (while ovlys
-	    (let ((ovly (car ovlys)))
-	      (when (overlay-get ovly name)
-		(delete-overlay ovly)
-		))
-	    (setq ovlys (cdr ovlys)))))
+      (let ((ovlys (overlays-in start end)))
+	(while ovlys
+	  (let ((ovly (car ovlys)))
+	    (when (overlay-get ovly name) (delete-overlay ovly)))
+	  (setq ovlys (cdr ovlys))))
     (remove-overlays start end name value)))
 
 (defun pov-get-existing-overlays ()
   "This is an internal function to read existing overlays.
-They are read into a temporary buffer for use when saving or
-merging overlays."
+Elisp code to recreate them is stored in a temporary buffer for
+use when saving or merging overlays."
   (let ((tbuf (generate-new-buffer "**persistent-overlays**")))
     (save-excursion
       (let ((ovlys (overlays-in (point-min) (point-max))))
@@ -221,8 +221,8 @@ merging overlays."
 
 (defun pov-get-ovly-fname (full fname)
   "Internal function to generate the file name for overlay files.
-FULL is the full path name of the file being visited.  FNAME is the
-filename being visited."
+FULL is the full path name of the file being visited.  FNAME is just
+the filename being visited."
   ; strip unique identifier off of fname
   (setq fname (replace-regexp-in-string "<.*?>$" "" fname))
   (let ((name (if pov-use-path-name (replace-regexp-in-string "[:/\\]" "_" full) (concat fname "-" (sha1 full) ".pov")))
@@ -260,7 +260,12 @@ NOTE: If a loaded overlay has exactly the same properties and
 values as an existing overlay only a single overlay is retained."
   (interactive)
   (when (buffer-file-name)
-    (let ((file (if (char-or-string-p ovfile) ovfile (pov-get-ovly-fname (buffer-file-name) (buffer-name))))
+    (let ((file (if (char-or-string-p ovfile)
+		    ovfile
+		  (pov-get-ovly-fname (buffer-file-name) (buffer-name))))
+	  (tbuf nil)
+	  (xbuf nil)
+	  (curbuf nil)
 	  (merged nil))
       (with-temp-message (format "Merging in overlays from %s..." (buffer-name))
 	(setq curbuf (buffer-name))
@@ -272,7 +277,9 @@ values as an existing overlay only a single overlay is retained."
 		(set-buffer xbuf)
 		(append-to-buffer tbuf (point-min) (point-max))
 		(set-buffer tbuf)
-		(when (fboundp 'delete-duplicate-lines) (delete-duplicate-lines (point-min) (point-max)) (pov-delete-duplicate-lines tbuf))
+		(when (fboundp 'delete-duplicate-lines)
+		  (delete-duplicate-lines (point-min) (point-max))
+		  (pov-delete-duplicate-lines tbuf))
 		(set-buffer curbuf)
 		(let ((props pov-property-names))
 		  (while props
@@ -283,7 +290,7 @@ values as an existing overlay only a single overlay is retained."
 		(eval-buffer tbuf)
 		(kill-buffer tbuf)
 		(kill-buffer xbuf)
-		(setq loaded t))
+		(setq merged t))
 	    (when (char-or-string-p ovfile) (message "File %s does not exist." ovfile)))))
       merged)))
   
@@ -318,6 +325,7 @@ may provide an `pov-merge-overlays' function."
   (interactive)
   (when (buffer-file-name)
     (let ((file (if (char-or-string-p ovfile) ovfile (pov-get-ovly-fname (buffer-file-name) (buffer-name))))
+	  (tbuf nil)
 	  (loaded nil))
       (with-temp-message (format "Loading overlays for %s..." (buffer-name))
 	(setq tbuf (pov-read-overlays file))
@@ -362,6 +370,7 @@ NOTE: Only overlays that contain properties in `pov-property-names' are
 saved.  If the overlay already exists it is overwritten."
   (interactive)
   (let ((file (if (char-or-string-p ovfile) ovfile (pov-get-ovly-fname (buffer-file-name) (buffer-name))))
+	(tbuf nil)
 	(saved nil))
     (with-temp-message (format "Saving overlays for %s..." (buffer-name))
       (save-excursion
@@ -429,18 +438,16 @@ Key bindings:
   :group 'persistent-overlays
   :lighter " pov"
   :keymap pov-minor-mode-map
-  (setq pov-headline nil)
-  (if pov-minor-mode 
+  (if pov-minor-mode
       (progn ; pov-minor-mode was just enabled
 	(format-mode-line mode-name)
         (when pov-disable-on-major-mode-change (add-hook 'change-major-mode-hook (pov-disable) nil t))
 	(when pov-auto-save (add-hook 'after-save-hook 'pov-save-overlays nil t))
 	(if pov-auto-merge (pov-merge-overlays) (when (pov-auto-load (pov-load-overlays))))
 	)
-    ( ; pov-minor-mode was just disabled
-    (remove-hook 'after-save-hook 'pov-save-overlays t)
-    (remove-hook 'change-major-mode-hook 'pov-disable t))
-    ))
+    (progn ; pov-minor-mode was just disabled
+      (remove-hook 'after-save-hook 'pov-save-overlays t)
+      (remove-hook 'change-major-mode-hook 'pov-disable t))))
 
 (provide 'persistent-overlays)
 
