@@ -47,48 +47,48 @@ is created as a combination of the buffer name and a SHA1 hash of
 the file name to which they correspond. **NOTE**: you need to create
 the directory ~/.emacs-persistent-overlays.
 
-**persistent-overlays-directory** may be set to indicate a
+*persistent-overlays-directory* may be set to indicate a
 different directory in which to store overlays. If
-**persistent-overlays-use-path-name** is set to t, the overlay file
+*persistent-overlays-use-path-name* is set to *t*, the overlay file
 is named using the underscore delimited full path of the file
 instead of using a SHA1 hash. Overlay file names always end with
-.povly.
+*.povly*.
 
-**persistent-overlays-property-names** specifies a list of property
+*persistent-overlays-property-names* specifies a list of property
 symbols that must exist in an overlay for it to be handled by
 this mode. By default it is set to a list containing the symbol
-**invisible so that overlays which hide sections of a buffer are
+*'invisible* so that overlays which hide sections of a buffer are
 stored. This was the primary motivation for this mode.
 
-If **persistent-overlays-auto-save** is t all overlays containing
-properties in **persistent-overlays-property-names** will be saved
-in the directory indicated by **persistent-overlays-directory**
+If *persistent-overlays-auto-save* is *t* all overlays containing
+properties in *persistent-overlays-property-names* will be saved
+in the directory indicated by *persistent-overlays-directory*
 when the buffer is saved.
 
-If **persistent-overlays-auto-load** is t existing overlays for the
-buffer will be loaded from **persistent-overlays-directory** when
-the buffer is loaded or when **persistent-overlays-minor-mode** is
+If *persistent-overlays-auto-load* is *t* existing overlays for the
+buffer will be loaded from *persistent-overlays-directory* when
+the buffer is loaded or when *persistent-overlays-minor-mode* is
 enabled.
 
-If **persistent-overlays-auto-merge** is t existing overlays for
+If *persistent-overlays-auto-merge* is *t* existing overlays for
 the buffer will be loaded and merged from
-**persistent-overlays-directory** when the buffer is loaded and
-when **persistent-overlays-minor-mode** is enabled. This is the
+*persistent-overlays-directory* when the buffer is loaded and
+when *persistent-overlays-minor-mode* is enabled. This is the
 default behavior which is useful when
-persistent-overlays-minor-mode is enabled after having created
+*persistent-overlays-minor-mode* is enabled after having created
 additional overlays.
 
 Other custom variables are
-**persistent-overlays-store-with-user-file**,
-**persistent-overlays-store-as-hidden** and
-**persistent-overlays-disable-on-major-mode-change**.  Please use
+*persistent-overlays-store-with-user-file*,
+*persistent-overlays-store-as-hidden* and
+*persistent-overlays-disable-on-major-mode-change*.  Please use
 describe-variable for details on those variables.
 
-NOTE: There is currently no mechanism for binding overlay files
+**NOTE: There is currently no mechanism for binding overlay files
 with the corresponding user files when files are moved. If you
 wish to retain existing stored overlays you can manually load or
 merge the overlays from the original overlay file after renaming
 the user file. You may also want to delete the original overlay
 file after merging to avoid having unused overlay files lying
 around. Each overlay file contains the full path name of the file
-to which it applies as its first line.
+to which it applies as its first line.**
