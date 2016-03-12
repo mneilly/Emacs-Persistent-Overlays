@@ -19,21 +19,21 @@ To enable this mode add the following to your ~/.emacs or
 ~/emacs.d/init.el file. This assumes that you have placed
 persistent-overlays.el somewhere in your load-path.
 
-(load-library "persistent-overlays")
+    (load-library "persistent-overlays")
 
 FWIW - this is what I use in my .emacs:
 
-  ;; minor modes on by default for all programming modes
-  (add-to-list 'load-path "~/commonenv/emacs/Emacs-Persistent-Overlays/")
-  (load-library "persistent-overlays")
+    ;; minor modes on by default for all programming modes
+    (add-to-list 'load-path "~/commonenv/emacs/Emacs-Persistent-Overlays/")
+    (load-library "persistent-overlays")
 
-  (when (not (< emacs-major-version 24))
-    (add-hook 'prog-mode-hook (lambda () (hs-minor-mode 1) (setq hs-allow-nesting t) (persistent-overlays-minor-mode 1))))
+    (when (not (< emacs-major-version 24))
+      (add-hook 'prog-mode-hook (lambda () (hs-minor-mode 1) (setq hs-allow-nesting t) (persistent-overlays-minor-mode 1))))
 
-  (when (not (> emacs-major-version 23))
-    (add-hook 'c-mode-hook (lambda () (hs-minor-mode 1) (setq hs-allow-nesting t) (persistent-overlays-minor-mode 1)))
-    (add-hook 'c++-mode-hook (lambda () (hs-minor-mode 1) (setq hs-allow-nesting t) (persistent-overlays-minor-mode 1)))
-    (add-hook 'emacs-lisp-mode-hook (lambda () (hs-minor-mode 1) (setq hs-allow-nesting t) (persistent-overlays-minor-mode 1)))
+    (when (not (> emacs-major-version 23))
+      (add-hook 'c-mode-hook (lambda () (hs-minor-mode 1) (setq hs-allow-nesting t) (persistent-overlays-minor-mode 1)))
+      (add-hook 'c++-mode-hook (lambda () (hs-minor-mode 1) (setq hs-allow-nesting t) (persistent-overlays-minor-mode 1)))
+      (add-hook 'emacs-lisp-mode-hook (lambda () (hs-minor-mode 1) (setq hs-allow-nesting t) (persistent-overlays-minor-mode 1)))
     )
 
 Enjoy
