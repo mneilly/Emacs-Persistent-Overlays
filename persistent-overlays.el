@@ -51,12 +51,12 @@
 ;;; Code:
 (defgroup persistent-overlays nil
   "Minor mode for storing and loading overlays for a buffers."
-  :prefix "pov-"
+  :prefix "persistent-overlays-"
   :group 'languages)
 
 ;; ===== Customization variables ==============================================
 
-(defcustom pov-property-names '(invisible)
+(defcustom persistent-overlays-property-names '(invisible)
   "Indicates a list of overlay property names.
 If any of these properties exist in an overlay it will be handled
 by this mode.\n\nBy default it is set to `invisible'."
@@ -64,22 +64,22 @@ by this mode.\n\nBy default it is set to `invisible'."
   :group 'persistent-overlays)
 ;; make it buffer local because different buffers may be using different
 ;; modes and minor modes
-(make-variable-buffer-local 'pov-property-names)
+(make-variable-buffer-local 'persistent-overlays-property-names)
 
-(defcustom pov-disable-on-major-mode-change nil
-  "When t switching major modes will disable pov-minor-mode.
-By default it nil so that pov-minor-mode remains enabled when
+(defcustom persistent-overlays-disable-on-major-mode-change nil
+  "When t switching major modes will disable persistent-overlays-minor-mode.
+By default it nil so that persistent-overlays-minor-mode remains enabled when
 switching major mods."
   :type 'boolean
   :group 'persistent-overlays)
 
-(defcustom pov-directory "~/.emacs-pov"
+(defcustom persistent-overlays-directory "~/.emacs-persistent-overlays"
   "Specifies the full path to the directory in which to store overlays.
-\n\nBy default it is set to ~/.emacs-pov"
+\n\nBy default it is set to ~/.emacs-persistent-overlays"
   :type 'directory
   :group 'persistent-overlays)
 
-(defcustom pov-use-path-name nil
+(defcustom persistent-overlays-use-path-name nil
   "By default overlay files are named as the buffer name plus a SHA1 hash.
 If this variable is set to t, the overlay file will be named
 using the full path of the file by replacing the file separators
@@ -87,75 +87,76 @@ with underscores."
   :type 'boolean
   :group 'persistent-overlays)
 
-(defcustom pov-store-with-user-file nil
-  "By default overlay files are stored in the directory `pov-directory'.
+(defcustom persistent-overlays-store-with-user-file nil
+  "By default overlay files are stored in `persistent-overlays-directory'.
 If this variable is t, files will be stored alongside the user
 file instead."
   :type 'boolean
   :group 'persistent-overlays)
 
-(defcustom pov-store-as-hidden nil
-  "By default overlay files are named as per `pov-use-path-name'.
-If this variable is t, overlay file names will start with a .
-which makes them hidden files on most systems."
+(defcustom persistent-overlays-store-as-hidden nil
+  "If this variable is t, overlay file names will start with a '.'.
+By default overlay files are named as per `persistent-overlays-use-path-name'."
   :type 'boolean
   :group 'persistent-overlays)
 
-(defcustom pov-auto-load nil
+(defcustom persistent-overlays-auto-load nil
   "When t overlays are automatically loaded.
 Overlays are loaded from the corresponding overlay file in
-`pov-directory' when a buffer is loaded.  By default this is nil."
+`persistent-overlays-directory' when a buffer is loaded.  By default this is nil."
   :type 'boolean
   :group 'persistent-overlays)
 
-(defcustom pov-auto-merge t
+(defcustom persistent-overlays-auto-merge t
   "When t overlays are automatically loaded and merged.
 Overlays are loaded from the corresponding overlay file in
-`pov-directory' when a buffer is loaded.  This is useful when you
-have added overlays to a file before enabling pov-minor-mode but
-you already having overlays saved that you don't want to lose.  If
-`pov-auto-merge' is t `pov-auto-load' is ignored.\n\nBy default
-this is t."
+`persistent-overlays-directory' when a buffer is loaded.  This is
+useful when you have added overlays to a file before enabling
+persistent-overlays-minor-mode but you already having overlays
+saved that you don't want to lose.  If
+`persistent-overlays-auto-merge' is t
+`persistent-overlays-auto-load' is ignored.\n\nBy default this is
+t."
   :type 'boolean
   :group 'persistent-overlays)
 
-(defcustom pov-auto-save t
+(defcustom persistent-overlays-auto-save t
   "When t overlays are automatically saved.
 Overlays are saved to the corresponding overlay file in
-`pov-directory' when a buffer is saved.\n\nBy default this is t."
+`persistent-overlays-directory' when a buffer is saved.\n\nBy default this is t."
   :type 'boolean
   :group 'persistent-overlays)
 
-(defcustom pov-minor-mode-hook nil
-  "Hook called when `pov-minor-mode' is activated or deactivated."
+(defcustom persistent-overlays-minor-mode-hook nil
+  "Hook called when `persistent-overlays-minor-mode' is activated or deactivated."
   :type 'hook
   :group 'persistent-overlays
   :version "24.5")
 
 ;; ===== variables ============================================================
 
-(defvar pov-minor-mode nil
+(defvar persistent-overlays-minor-mode nil
   "Indicates if this mode is active.
-Use the command `pov-minor-mode' to toggle or set this
+Use the command `persistent-overlays-minor-mode' to toggle or set this
 variable.")
 
 ;; ===== key map ==============================================================
 
-(defvar pov-minor-mode-map
+(defvar persistent-overlays-minor-mode-map
   (let ((map (make-sparse-keymap)))
     ;; default binding for explicitly saving and loading overlays
-    (define-key map "\C-c*\C-s"	'pov-save-overlays)
-    (define-key map "\C-c*\M-s"	'pov-savex-overlays)
-    (define-key map "\C-c*\C-m"	'pov-merge-overlays)
-    (define-key map "\C-c*\M-m"	'pov-mergex-overlays)
-    (define-key map "\C-c*\C-l"	'pov-load-overlays)
-    (define-key map "\C-c*\M-l"	'pov-loadx-overlays)
+    (define-key map "\C-c*\C-s"	'persistent-overlays-save-overlays)
+    (define-key map "\C-c*\M-s"	'persistent-overlays-savex-overlays)
+    (define-key map "\C-c*\C-m"	'persistent-overlays-merge-overlays)
+    (define-key map "\C-c*\M-m"	'persistent-overlays-mergex-overlays)
+    (define-key map "\C-c*\C-l"	'persistent-overlays-load-overlays)
+    (define-key map "\C-c*\M-l"	'persistent-overlays-loadx-overlays)
     map)
   "Keymap for persistent-overlays minor mode.")
 
 ;; ===== internal functions ===================================================
 
-(defun pov-read-overlays (&optional file)
+(defun persistent-overlays-read-overlays (&optional file)
   "This is an internal function to read overlays from FILE.
 Overlays are read into a temporary buffer which is used for
 loading and merging."
@@ -172,7 +173,7 @@ loading and merging."
 	  (setq tbuf nil))))
     tbuf))
 
-(defun pov-remove-overlays (&optional start end name value)
+(defun persistent-overlays-remove-overlays (&optional start end name value)
   "This is an internal function which wraps `remove-overlays'.
 The START, END and NAME argments match those passed to `remove-overlays'.
 If VALUE is set to 'ANY, then all values are matched.  This allows
@@ -185,7 +186,7 @@ removal of overlays by matching only the name."
 	  (setq ovlys (cdr ovlys))))
     (remove-overlays start end name value)))
 
-(defun pov-get-existing-overlays ()
+(defun persistent-overlays-get-existing-overlays ()
   "This is an internal function to read existing overlays.
 Elisp code to recreate them is stored in a temporary buffer for
 use when saving or merging overlays."
@@ -193,7 +194,7 @@ use when saving or merging overlays."
     (save-excursion
       (let ((ovlys (overlays-in (point-min) (point-max))))
 	(while ovlys
-	  (let ((ovly (car ovlys)) (props pov-property-names))
+	  (let ((ovly (car ovlys)) (props persistent-overlays-property-names))
 	    (while props
 	      (let ((prop (car props)) (oprops nil))
 		(when (overlay-get ovly prop)
@@ -206,7 +207,7 @@ use when saving or merging overlays."
 	))
     tbuf))
 
-(defun pov-delete-duplicate-lines (buf)
+(defun persistent-overlays-delete-duplicate-lines (buf)
   "This is an internal function to remove duplicate lines from BUF.
 It is only used if `delete-duplicate-lines' is not available.  It
 is used to ensure that dupliate overlays are not created when
@@ -219,42 +220,43 @@ merging overlays."
 	    (re-search-forward "^\\(.*\\)\n\\(\\(.*\n\\)*\\)\\1\n" end t))
 	(replace-match "\\1\n\\2")))))
 
-(defun pov-get-ovly-fname (full fname)
+(defun persistent-overlays-get-ovly-fname (full fname)
   "Internal function to generate the file name for overlay files.
 FULL is the full path name of the file being visited.  FNAME is just
 the filename being visited."
   ; strip unique identifier off of fname
   (setq fname (replace-regexp-in-string "<.*?>$" "" fname))
-  (let ((name (if pov-use-path-name (replace-regexp-in-string "[:/\\]" "_" full) (concat fname "-" (sha1 full) ".pov")))
-	(dir (if pov-store-with-user-file (replace-regexp-in-string "[:/\\][^/\\]*$" "" full) pov-directory)))
-    (when pov-store-as-hidden (setq name (concat "." name)))
+  (let ((name (if persistent-overlays-use-path-name (replace-regexp-in-string "[:/\\]" "_" full) (concat fname "-" (sha1 full) ".povly")))
+	(dir (if persistent-overlays-store-with-user-file (replace-regexp-in-string "[:/\\][^/\\]*$" "" full) persistent-overlays-directory)))
+    (when persistent-overlays-store-as-hidden (setq name (concat "." name)))
     (concat dir "/" name)))
 
-(defun pov-disable ()
-  "Internal function to disable pov-minor-mode upon a major mode change."
-  (pov-minor-mode -1))
+(defun persistent-overlays-disable ()
+  "Internal function to disable persistent-overlays-minor-mode upon a major mode change."
+  (persistent-overlays-minor-mode -1))
 
 ;; ===== merge functions ======================================================
 
-(defun pov-mergex-overlays (&optional ovfile)
+(defun persistent-overlays-mergex-overlays (&optional ovfile)
   "Explicitly merge in overlays.
 OVFILE must be explicity provided.  The overlay file OVFILE
 specifies the path to the overlay file to be loaded and merged.
 
 NOTE: Loaded overlays are merged with existing overlays.  See
-`pov-load-overlays' and `pov-loadx-overlays' if you want to load
-overlays without merging."
+`persistent-overlays-load-overlays' and
+`persistent-overlays-loadx-overlays' if you want to load overlays
+without merging."
   (interactive "f")
-  (when (pov-merge-overlays ovfile)
+  (when (persistent-overlays-merge-overlays ovfile)
       (message "Overlays were loaded and merged from %s" ovfile)))
 
 ;;;###autoload
-(defun pov-merge-overlays (&optional ovfile)
+(defun persistent-overlays-merge-overlays (&optional ovfile)
   "Merge overlays.
-If OVFILE is not provided, the overlay file corresponding to
-the current buffer is loaded from `pov-directory' and merged with
-existing overlays.  If OVFILE is provided, it specifies the path to
-the overlay file to be merged.
+If OVFILE is not provided, the overlay file corresponding to the
+current buffer is loaded from `persistent-overlays-directory' and
+merged with existing overlays.  If OVFILE is provided, it
+specifies the path to the overlay file to be merged.
 
 NOTE: If a loaded overlay has exactly the same properties and
 values as an existing overlay only a single overlay is retained."
@@ -262,7 +264,7 @@ values as an existing overlay only a single overlay is retained."
   (when (buffer-file-name)
     (let ((file (if (char-or-string-p ovfile)
 		    ovfile
-		  (pov-get-ovly-fname (buffer-file-name) (buffer-name))))
+		  (persistent-overlays-get-ovly-fname (buffer-file-name) (buffer-name))))
 	  (tbuf nil)
 	  (xbuf nil)
 	  (curbuf nil)
@@ -270,21 +272,21 @@ values as an existing overlay only a single overlay is retained."
       (with-temp-message (format "Merging in overlays from %s..." (buffer-name))
 	(setq curbuf (buffer-name))
 	(save-excursion
-	  (setq tbuf (pov-read-overlays file))
+	  (setq tbuf (persistent-overlays-read-overlays file))
 	  (if tbuf
 	      (progn
-		(setq xbuf (pov-get-existing-overlays))
+		(setq xbuf (persistent-overlays-get-existing-overlays))
 		(set-buffer xbuf)
 		(append-to-buffer tbuf (point-min) (point-max))
 		(set-buffer tbuf)
 		(when (fboundp 'delete-duplicate-lines)
 		  (delete-duplicate-lines (point-min) (point-max))
-		  (pov-delete-duplicate-lines tbuf))
+		  (persistent-overlays-delete-duplicate-lines tbuf))
 		(set-buffer curbuf)
-		(let ((props pov-property-names))
+		(let ((props persistent-overlays-property-names))
 		  (while props
 		    (let ((prop (car props)))
-		      (pov-remove-overlays (point-min) (point-max) prop 'ANY))
+		      (persistent-overlays-remove-overlays (point-min) (point-max) prop 'ANY))
 		    (setq props (cdr props))
 		    ))
 		(eval-buffer tbuf)
@@ -297,44 +299,45 @@ values as an existing overlay only a single overlay is retained."
 
 ;; ===== load functions =======================================================
 
-(defun pov-loadx-overlays (&optional ovfile)
+(defun persistent-overlays-loadx-overlays (&optional ovfile)
   "Explicitly load overalys.
 OVFILE must be explicity provided.  The overlay file OVFILE
 specifies the path to the overlay file to be loaded.
 
 NOTE: All overlays that contain properties in
-`pov-property-names' are removed before loading overlays.  Loaded
-overlays are not merged with existing overlays.  See
-`pov-merge-overlays' and `pov-mergex-overlays' if you want to
-merge overlays."
+`persistent-overlays-property-names' are removed before loading
+overlays.  Loaded overlays are not merged with existing overlays.
+See `persistent-overlays-merge-overlays' and
+`persistent-overlays-mergex-overlays' if you want to merge
+overlays."
   (interactive "f")
-  (when (pov-load-overlays ovfile)
+  (when (persistent-overlays-load-overlays ovfile)
       (message "Overlays were loaded from %s" ovfile)))
 
 ;;;###autoload
-(defun pov-load-overlays (&optional ovfile)
+(defun persistent-overlays-load-overlays (&optional ovfile)
   "Load overalys.
 If OVFILE is not provided the overlay file corresponding to
-the current buffer is loaded from `pov-directory'.  If OVFILE is
+the current buffer is loaded from `persistent-overlays-directory'.  If OVFILE is
 provided it specifies the path to the overlay file to be loaded.
 
 NOTE: All overlays that contain properties in
-`pov-property-names' are removed before loading overlays.  Loaded
+`persistent-overlays-property-names' are removed before loading overlays.  Loaded
 overlays are not merged with existing overlays.  A future version
-may provide an `pov-merge-overlays' function."
+may provide an `persistent-overlays-merge-overlays' function."
   (interactive)
   (when (buffer-file-name)
-    (let ((file (if (char-or-string-p ovfile) ovfile (pov-get-ovly-fname (buffer-file-name) (buffer-name))))
+    (let ((file (if (char-or-string-p ovfile) ovfile (persistent-overlays-get-ovly-fname (buffer-file-name) (buffer-name))))
 	  (tbuf nil)
 	  (loaded nil))
       (with-temp-message (format "Loading overlays for %s..." (buffer-name))
-	(setq tbuf (pov-read-overlays file))
+	(setq tbuf (persistent-overlays-read-overlays file))
 	(if tbuf
 	    (progn
-	      (let ((props pov-property-names))
+	      (let ((props persistent-overlays-property-names))
 		(while props
 		  (let ((prop (car props)))
-		    (pov-remove-overlays (point-min) (point-max) prop 'ANY))
+		    (persistent-overlays-remove-overlays (point-min) (point-max) prop 'ANY))
 		  (setq props (cdr props))
 		  ))
 	      (eval-buffer tbuf)
@@ -345,36 +348,37 @@ may provide an `pov-merge-overlays' function."
 
 ;; ===== save functions =======================================================
 
-(defun pov-savex-overlays (&optional ovfile)
+(defun persistent-overlays-savex-overlays (&optional ovfile)
   "Explicitly save overlays.
 OVFILE must be explicity provided.  The overlay file
 corresponding to the current buffer is saved in OVFILE.  Usually,
-`pov-save-overlays' should be used instead.
+`persistent-overlays-save-overlays' should be used instead.
 
 NOTE: Only overlays that contain properties in
-`pov-property-names' are saved.  If the overlay already exists it
-is overwritten."
+`persistent-overlays-property-names' are saved.  If the overlay
+already exists it is overwritten."
   (interactive "F")
-  (when (pov-save-overlays ovfile)
+  (when (persistent-overlays-save-overlays ovfile)
       (message "Overlays were saved to %s" ovfile)))
 
 ;;;###autoload
-(defun pov-save-overlays (&optional ovfile)
+(defun persistent-overlays-save-overlays (&optional ovfile)
   "Save overlays.
-If OVFILE is not provided, the overlay file corresponding to
-the current buffer is saved in the directory pointed to by
-`pov-directory'.  If OVFILE is provided, it specifies the path of
-the overlay file to be saved.
+If OVFILE is not provided, the overlay file corresponding to the
+current buffer is saved in the directory pointed to by
+`persistent-overlays-directory'.  If OVFILE is provided, it
+specifies the path of the overlay file to be saved.
 
-NOTE: Only overlays that contain properties in `pov-property-names' are
-saved.  If the overlay already exists it is overwritten."
+NOTE: Only overlays that contain properties in
+`persistent-overlays-property-names' are saved.  If the overlay
+already exists it is overwritten."
   (interactive)
-  (let ((file (if (char-or-string-p ovfile) ovfile (pov-get-ovly-fname (buffer-file-name) (buffer-name))))
+  (let ((file (if (char-or-string-p ovfile) ovfile (persistent-overlays-get-ovly-fname (buffer-file-name) (buffer-name))))
 	(tbuf nil)
 	(saved nil))
     (with-temp-message (format "Saving overlays for %s..." (buffer-name))
       (save-excursion
-	(setq tbuf (pov-get-existing-overlays))
+	(setq tbuf (persistent-overlays-get-existing-overlays))
 	(set-buffer tbuf)
 	(if (> (buffer-size) 0)
 	    (progn
@@ -389,40 +393,48 @@ saved.  If the overlay already exists it is overwritten."
 ;; ===== Define the mode ======================================================
 
 ;;;###autoload
-(define-minor-mode pov-minor-mode
+(define-minor-mode persistent-overlays-minor-mode
   "This is a minor mode to make overlays persistent by saving
 them to a file and subsequently loading them. By default overlays
-are stored in ~/.emacs-pov with a file name that is created as a
-combination of the buffer name and a SHA1 hash of the file name
-to which they correspond.  `pov-directory' may be set to indicate
-a different directory in which to store overlays. If
-`pov-use-path-name' is set to t, the overlay file is named using
-the underscore delimited full path of the file instead of using a
-SHA1 hash. Overlay file names always end with .pov.
+are stored in ~/.emacs-persistent-overlays with a file name that
+is created as a combination of the buffer name and a SHA1 hash of
+the file name to which they correspond.
+`persistent-overlays-directory' may be set to indicate a
+different directory in which to store overlays. If
+`persistent-overlays-use-path-name' is set to t, the overlay file
+is named using the underscore delimited full path of the file
+instead of using a SHA1 hash. Overlay file names always end with
+.povly.
 
-`pov-property-names' specifies a list of property symbols that
-must exist in an overlay for it to be handled by this mode. By
-default it is set to a list containing the symbol 'invisible so
-that overlays which hide sections of a buffer are stored. This
-was the primary motivation for this mode.
+`persistent-overlays-property-names' specifies a list of property
+symbols that must exist in an overlay for it to be handled by
+this mode. By default it is set to a list containing the symbol
+'invisible so that overlays which hide sections of a buffer are
+stored. This was the primary motivation for this mode.
 
-If `pov-auto-save' is t all overlays containing properties in
-`pov-property-names' will be saved in the directory indicated by
-`pov-directory' when the buffer is saved.
+If `persistent-overlays-auto-save' is t all overlays containing
+properties in `persistent-overlays-property-names' will be saved
+in the directory indicated by `persistent-overlays-directory'
+when the buffer is saved.
 
-If `pov-auto-load' is t existing overlays for the buffer will be
-loaded from `pov-directory' when the buffer is loaded or when
-`pov-minor-mode' is enabled.
+If `persistent-overlays-auto-load' is t existing overlays for the
+buffer will be loaded from `persistent-overlays-directory' when
+the buffer is loaded or when `persistent-overlays-minor-mode' is
+enabled.
 
-If `pov-auto-merge' is t existing overlays for the buffer will be
-loaded and merged from `pov-directory' when the buffer is loaded
-and when `pov-minor-mode' is enabled. This is the default
-behavior which is useful when pov-minor-mode is enabled after
-having created additional overlays.
+If `persistent-overlays-auto-merge' is t existing overlays for
+the buffer will be loaded and merged from
+`persistent-overlays-directory' when the buffer is loaded and
+when `persistent-overlays-minor-mode' is enabled. This is the
+default behavior which is useful when
+persistent-overlays-minor-mode is enabled after having created
+additional overlays.
 
-Other custom variables are `pov-store-with-user-file',
-`pov-store-as-hidden' and `pov-disable-on-major-mode-change'.
-Please use describe-variable for details on those variables.
+Other custom variables are
+`persistent-overlays-store-with-user-file',
+`persistent-overlays-store-as-hidden' and
+`persistent-overlays-disable-on-major-mode-change'.  Please use
+describe-variable for details on those variables.
 
 NOTE: There is currently no mechanism for binding overlay files
 with the corresponding user files when files are moved. If you
@@ -434,20 +446,20 @@ around. Each overlay file contains the full path name of the file
 to which it applies as its first line.
 
 Key bindings:
-\\{pov-minor-mode-map}"
+\\{persistent-overlays-minor-mode-map}"
   :group 'persistent-overlays
-  :lighter " pov"
-  :keymap pov-minor-mode-map
-  (if pov-minor-mode
-      (progn ; pov-minor-mode was just enabled
+  :lighter " povly"
+  :keymap persistent-overlays-minor-mode-map
+  (if persistent-overlays-minor-mode
+      (progn ; persistent-overlays-minor-mode was just enabled
 	(format-mode-line mode-name)
-        (when pov-disable-on-major-mode-change (add-hook 'change-major-mode-hook (pov-disable) nil t))
-	(when pov-auto-save (add-hook 'after-save-hook 'pov-save-overlays nil t))
-	(if pov-auto-merge (pov-merge-overlays) (when pov-auto-load (pov-load-overlays)))
+        (when persistent-overlays-disable-on-major-mode-change (add-hook 'change-major-mode-hook (persistent-overlays-disable) nil t))
+	(when persistent-overlays-auto-save (add-hook 'after-save-hook 'persistent-overlays-save-overlays nil t))
+	(if persistent-overlays-auto-merge (persistent-overlays-merge-overlays) (when persistent-overlays-auto-load (persistent-overlays-load-overlays)))
 	)
-    (progn ; pov-minor-mode was just disabled
-      (remove-hook 'after-save-hook 'pov-save-overlays t)
-      (remove-hook 'change-major-mode-hook 'pov-disable t))))
+    (progn ; persistent-overlays-minor-mode was just disabled
+      (remove-hook 'after-save-hook 'persistent-overlays-save-overlays t)
+      (remove-hook 'change-major-mode-hook 'persistent-overlays-disable t))))
 
 (provide 'persistent-overlays)
 
