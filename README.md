@@ -44,7 +44,9 @@ This is a minor mode to make overlays persistent by saving
 them to a file and subsequently loading them. By default overlays
 are stored in ~/.emacs-persistent-overlays with a file name that
 is created as a combination of the buffer name and a SHA1 hash of
-the file name to which they correspond.
+the file name to which they correspond. **NOTE**: you need to create
+the directory ~/.emacs-persistent-overlays.
+
 **persistent-overlays-directory** may be set to indicate a
 different directory in which to store overlays. If
 **persistent-overlays-use-path-name** is set to t, the overlay file
