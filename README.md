@@ -92,3 +92,6 @@ the user file. You may also want to delete the original overlay
 file after merging to avoid having unused overlay files lying
 around. Each overlay file contains the full path name of the file
 to which it applies as its first line.**
+
+ [![Analytics](https://ga-beacon.appspot.com/UA-63342536-2/Emacs-Persistent-Overlays)](https://github.com/mneilly/Emacs-Persistent-Overlays)
+ 
