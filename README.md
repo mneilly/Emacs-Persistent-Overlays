@@ -93,5 +93,11 @@ file after merging to avoid having unused overlay files lying
 around. Each overlay file contains the full path name of the file
 to which it applies as its first line.**
 
+If you edit a file outside of Emacs, any stored overlays are potentially
+invalid due to repositioning of the text. For example, performing a *git checkout*
+of a file to restore the master version over an edited version. In this scenario,
+you may need to expand all hidden overlays and save to overwrite the existing 
+overlays (or exit Emacs, delete the overlay file and restart Emacs).
+
  [![Analytics](https://ga-beacon.appspot.com/UA-63342536-2/Emacs-Persistent-Overlays)](https://github.com/mneilly/Emacs-Persistent-Overlays)
  
