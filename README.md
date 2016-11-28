@@ -84,6 +84,8 @@ Other custom variables are
 *persistent-overlays-disable-on-major-mode-change*.  Please use
 describe-variable for details on those variables.
 
+## Potential Issues
+
 **NOTE: There is currently no mechanism for binding overlay files
 with the corresponding user files when files are moved. If you
 wish to retain existing stored overlays you can manually load or
